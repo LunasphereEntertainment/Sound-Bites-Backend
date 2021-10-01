@@ -4,9 +4,19 @@ import {
   Param,
   StreamableFile,
   Response,
+  Post,
+  UseInterceptors,
+  UploadedFile,
+  Body,
+  Patch,
+  Delete,
 } from '@nestjs/common';
 import { SoundsService } from './sounds.service';
 import { createReadStream } from 'fs';
+import { writeFile } from 'fs/promises';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Tag } from '../tags/tags.entity';
+import { createHash } from 'crypto';
 
 @Controller('/sounds')
 export class SoundsController {
@@ -35,5 +45,36 @@ export class SoundsController {
     });
 
     return new StreamableFile(createReadStream(song.path));
+  }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('audio'))
+  async uploadSound(
+    @UploadedFile('file') file: Express.Multer.File,
+    @Body('quote') quote: string,
+    @Body('tags') tags: Tag[],
+  ) {
+    const hash = createHash('sha1');
+    hash.update(file.filename);
+    hash.digest().toString('base64');
+
+    const path = `/sounds/${hash}.mp3`,
+      sound = this.service.createSound(quote, tags, path);
+
+    await writeFile(path, file.buffer);
+  }
+
+  @Patch('/:id')
+  async updateMeta(
+    @Param('id') soundId: number,
+    @Body('quote') quote: string,
+    @Body('tags') tags: Tag[],
+  ) {
+    await this.service.updateMeta(soundId, quote, tags);
+  }
+
+  @Delete('/:id')
+  async deleteSound(@Param('id') soundId: number) {
+    await this.service.deleteSound(soundId, 0);
   }
 }

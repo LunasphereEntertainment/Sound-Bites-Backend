@@ -11,6 +11,7 @@ import { CollectionModule } from './collection/collection.module';
 import { Collection } from './collection/collection.entity';
 import { Tag } from './tags/tags.entity';
 import { TagsModule } from './tags/tags.module';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { TagsModule } from './tags/tags.module';
         });
       },
     }),
+    MulterModule,
     SoundsModule,
     CollectionModule,
     TagsModule,
