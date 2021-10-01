@@ -9,19 +9,22 @@ import { Sound } from './sounds/sound.entity';
 import { SoundsModule } from './sounds/sounds.module';
 import { CollectionModule } from './collection/collection.module';
 import { Collection } from './collection/collection.entity';
+import { Tag } from './tags/tags.entity';
+import { TagsModule } from './tags/tags.module';
 
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
       useFactory: async () => {
         return Object.assign(await getConnectionOptions(), {
-          entities: [Sound, Collection],
-          synchronize: true, //TODO: update to false for prod
+          entities: [Sound, Collection, Tag],
+          synchronize: !!process.env.DEV, //TODO: update to false for prod
         });
       },
     }),
     SoundsModule,
     CollectionModule,
+    TagsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
